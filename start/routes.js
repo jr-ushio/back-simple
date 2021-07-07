@@ -17,3 +17,14 @@
 const Route = use('Route')
 
 Route.on('/').render('welcome')
+Route.group(() => {
+  Route.post('login','UsuarioController.login')
+  Route.post('login2','UsuarioController.login2')
+  Route.get('usuarios','UsuarioController.index')
+  Route.get('usuarios/:id','UsuarioController.show')
+  Route.post('usuarios','UsuarioController.store')
+  Route.put('usuarios/:id','UsuarioController.update')
+  Route.delete('usuarios/:id','UsuarioController.delete')
+  Route.get('offline/sincronizar/manual','UsuarioController.sincronizar_manual')
+  Route.get('offline/operaciones','UsuarioController.offline_operaciones')
+}).prefix('apitest/')
