@@ -14,9 +14,11 @@ class SyncService {
     console.log('start ', );
     this.intervalo = setIntervalAsync(async ()=> {
       if (await this.verificarInternet()) {
+        await this.pull()
         await this.manual()
+        await this.pull()
       }
-    },  10000)
+    },  600000)
   }
   async pull() {
     const items_agregados = []

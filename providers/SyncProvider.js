@@ -30,7 +30,7 @@ class SyncProvider extends ServiceProvider {
    */
   boot () {
     console.log('BBB ', );
-    // (use('Adonis/Services/Sync')).start()
+    (use('Adonis/Services/Sync')).start()
   }
 }
 
