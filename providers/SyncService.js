@@ -6,9 +6,10 @@ const { clearIntervalAsync } = require('set-interval-async')
 class SyncService {
   cont = 0
   intervalo = null
-  constructor (accion, usuario_model) {
+  constructor (accion, usuario_model, env) {
     this.accion = accion
     this.usuario_model = usuario_model
+    this.env = env
   }
   start() {
     console.log('start ', );
@@ -23,9 +24,9 @@ class SyncService {
   async pull() {
     const items_agregados = []
 
-    const resp_host_remoto = await this.sendData('http://llega-ya.com/apitest/usuarios', null)
+    const resp_host_remoto = await this.sendData(this.env.get('APP_URL') + '/apitest/usuarios', null)
     if (resp_host_remoto.codigo === 200) {
-      let resp_local = await this.sendData('http://192.168.3.7:3333/apitest/usuarios', null)
+      let resp_local = await this.sendData(this.env.get('APP_URL') + '/apitest/usuarios', null)
       let acciones_para_eliminar = await this.accion.query().where('status','=','nosync').where('request_method','=','DELETE').fetch()
       let acciones_para_agregar = await this.accion.query().where('status','=','nosync').where('request_method','=','POST').fetch()
       acciones_para_eliminar  = acciones_para_eliminar.toJSON()

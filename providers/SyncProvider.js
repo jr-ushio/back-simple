@@ -16,7 +16,8 @@ class SyncProvider extends ServiceProvider {
       console.log('AAAA ', );
       const Accion = app.use('App/Models/SincronizarAccion')
       const Usuario = app.use('App/Models/Usuario')
-      return new SyncService(Accion, Usuario)
+      const Env = use('Env')
+      return new SyncService(Accion, Usuario, Env)
     })
   }
 
