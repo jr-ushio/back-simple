@@ -6,6 +6,7 @@ const Usuario = use('App/Models/Usuario')
 const Accion = use('App/Models/SincronizarAccion')
 const moment = require('moment')
 const fetch = require('node-fetch');
+const Env = use('Env')
 
 class UsuarioController extends BaseController {
   async login2({request, response}) {
@@ -95,7 +96,7 @@ class UsuarioController extends BaseController {
 
     const accion = new Accion()
     accion.request_method = 'POST'
-    accion.request_url = 'https://llega-ya.com/apitest/usuarios'
+    accion.request_url = Env.get('APP_URL_REMOTO') + '/apitest/usuarios'
     accion.request_url_params = null
     accion.request_body = JSON.stringify(usuario.toJSON())
     accion.content_type = 'JSON'
@@ -158,7 +159,7 @@ class UsuarioController extends BaseController {
 
     const accion = new Accion()
     accion.request_method = 'PUT'
-    accion.request_url = 'https://llega-ya.com/apitest/usuarios' + '/' + params.id
+    accion.request_url = Env.get('APP_URL_REMOTO') + '/apitest/usuarios/' + params.id
     accion.request_url_params = null
     accion.request_body = JSON.stringify(usuario.toJSON())
     accion.content_type = 'JSON'
@@ -183,7 +184,7 @@ class UsuarioController extends BaseController {
 
     const accion = new Accion()
     accion.request_method = 'DELETE'
-    accion.request_url = 'https://llega-ya.com/apitest/usuarios' + '/' + id
+    accion.request_url = Env.get('APP_URL_REMOTO') + '/apitest/usuarios/' + id
     accion.request_url_params = id
     accion.request_body = null
     accion.content_type = 'JSON'
