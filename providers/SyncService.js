@@ -24,7 +24,7 @@ class SyncService {
   async pull() {
     const items_agregados = []
 
-    const resp_host_remoto = await this.sendData(this.env.get('APP_URL') + '/apitest/usuarios', null)
+    const resp_host_remoto = await this.sendData(this.env.get('APP_URL_REMOTO') + '/apitest/usuarios', null)
     if (resp_host_remoto.codigo === 200) {
       let resp_local = await this.sendData(this.env.get('APP_URL') + '/apitest/usuarios', null)
       let acciones_para_eliminar = await this.accion.query().where('status','=','nosync').where('request_method','=','DELETE').fetch()
