@@ -8,7 +8,7 @@ class BaseController {
   validationMessages() {
     const fs = require('fs');
     const locale = Config.get('app.locales.locale')
-    const validaitonFile = Helpers.resourcesPath(`locales/en/validation.json`)
+    const validaitonFile = Helpers.resourcesPath(`locales/es/validation.json`)
 
     if (fs.existsSync(validaitonFile)) {
       return JSON.parse(fs.readFileSync(validaitonFile, 'utf8'));

@@ -196,7 +196,7 @@ class UsuarioController extends BaseController {
   }
 
   async online_operaciones({request, response, params}) {
-    const acciones = await Accion.query().where('status','=','public').fetch()
+    const acciones = await Accion.query().where('status','=','publico').where('id', '>', params.id).fetch()
     const accionesJSON  = acciones.toJSON()
     const resp = {
       operaciones: accionesJSON,

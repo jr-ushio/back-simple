@@ -25,5 +25,5 @@ Route.group(() => {
   Route.post('usuarios','UsuarioController.store')
   Route.put('usuarios/:id','UsuarioController.update')
   Route.delete('usuarios/:id','UsuarioController.delete')
-  Route.get('online/operaciones','UsuarioController.online_operaciones')
+  Route.get('online/operaciones/:id','UsuarioController.online_operaciones')
 }).prefix('apitest/')
