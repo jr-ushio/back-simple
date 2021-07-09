@@ -15,9 +15,10 @@ class SyncProvider extends ServiceProvider {
     this.app.singleton('Adonis/Services/Sync', (app) => {
       console.log('AAAA ', );
       const Accion = app.use('App/Models/SincronizarAccion')
+      const AccionPublica = app.use('App/Models/SincronizarAccionPublica')
       const Usuario = app.use('App/Models/Usuario')
       const Env = use('Env')
-      return new SyncService(Accion, Usuario, Env)
+      return new SyncService(Accion, AccionPublica, Usuario, Env)
     })
   }
 

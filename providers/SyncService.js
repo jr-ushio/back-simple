@@ -6,8 +6,9 @@ const { clearIntervalAsync } = require('set-interval-async')
 class SyncService {
   cont = 0
   intervalo = null
-  constructor (accion, usuario_model, env) {
+  constructor (accion, accion_publica, usuario_model, env) {
     this.accion = accion
+    this.accion_publica = accion_publica
     this.usuario_model = usuario_model
     this.env = env
   }
@@ -24,41 +25,70 @@ class SyncService {
   async pull() {
     const items_agregados = []
 
-    const resp_host_remoto = await this.sendData(this.env.get('APP_URL_REMOTO') + '/apitest/usuarios', null)
-    if (resp_host_remoto.codigo === 200) {
-      let resp_local = await this.sendData(this.env.get('APP_URL') + '/apitest/usuarios', null)
+    const ultimo_registro = await this.accion_publica.query().last()
+    const id_ultimo_Registro = ultimo_registro ? ultimo_registro.id : 0
+
+    const resp_2_host_remoto = await this.sendData(this.env.get('APP_URL_REMOTO') + '/apitest/online/operaciones/' + id_ultimo_Registro, null)
+
+    if (resp_2_host_remoto.codigo === 200) {
       let acciones_para_eliminar = await this.accion.query().where('status','=','nosync').where('request_method','=','DELETE').fetch()
       let acciones_para_agregar = await this.accion.query().where('status','=','nosync').where('request_method','=','POST').fetch()
       acciones_para_eliminar  = acciones_para_eliminar.toJSON()
       acciones_para_agregar  = acciones_para_agregar.toJSON()
 
-      let reg_local = (resp_local.data.total + acciones_para_eliminar.length) - acciones_para_agregar.length
-      console.log(reg_local , resp_host_remoto.data.total, );
-
-      if (reg_local < resp_host_remoto.data.total) {
-        for (let item of resp_host_remoto.data.data) {
-          const accion_para_eliminar = !acciones_para_eliminar.find(e => Number(e.request_url_params) === item.id)
-          if (!resp_local.data.data.find(e => e.id === item.id) && accion_para_eliminar) {
-            console.log('item sin match ', item.id);
-
-            await this.agregar_usuario(item)
-            items_agregados.push(item)
+      for (let item of resp_2_host_remoto.data.operaciones) {
+        if (item.request_method === 'POST') {
+          const user = JSON.parse(item.request_body)
+          const user_encontrado = await this.usuario_model.find(user.id)
+          const accion_para_eliminar = !acciones_para_eliminar.find(e => Number(e.request_url_params) === user.id)
+          if (!user_encontrado && accion_para_eliminar) {
+            console.log('item sin match ', user.id);
+            await this.agregar_usuario(user)
+            items_agregados.push(user)
           }
-          const accion_para_agregar = acciones_para_agregar.find(e => Number(JSON.parse(e.request_body).id) === item.id)
-          if (resp_local.data.data.find(e => e.id === item.id) && accion_para_agregar) {
-            console.log('item con conficto ', item.id);
-            const user = await this.usuario_model.find(JSON.parse(accion_para_agregar.request_body).id)
-            await user.delete()
-
-            await this.agregar_usuario(item)
-            items_agregados.push(item)
+          const accion_para_agregar = acciones_para_agregar.find(e => Number(JSON.parse(e.request_body).id) === user.id)
+          if (user_encontrado && accion_para_agregar) {
+            console.log('item con conficto ', user_encontrado.id);
+            const aux_user = await this.usuario_model.find(user_encontrado.id)
+            await aux_user.delete()
+            await this.agregar_usuario(user)
+            items_agregados.push(user)
+          }
+        } else if (item.request_method === 'PUT') {
+          const user = JSON.parse(item.request_body)
+          const user_encontrado = await this.usuario_model.find(user.id)
+          if (user_encontrado) {
+            user_encontrado.nombres = user.nombres
+            user_encontrado.apellidos = user.apellidos
+            user_encontrado.usuario = user.usuario
+            user_encontrado.password = user.password
+            await user_encontrado.save()
+          }
+        } else if (item.request_method === 'DELETE') {
+          const user_encontrado = await this.usuario_model.find(item.request_url_params)
+          if (user_encontrado) {
+            await user_encontrado.delete()
           }
         }
+        await this.agregar_accion_publica(item)
       }
     }
     return {
       registros_recuperados: items_agregados
     }
+  }
+  async agregar_accion_publica(item) {
+    const accion = new this.accion_publica()
+    accion.id = item.id
+    accion.request_method = item.request_method
+    accion.request_url = item.request_url
+    accion.request_url_params = item.request_url_params
+    accion.request_body = item.request_body
+    accion.content_type = item.content_type
+    accion.status = item.status
+    accion.response = item.response
+    accion.date_time = item.date_time
+    await accion.save()
   }
   async agregar_usuario(item) {
     const usuario = new this.usuario_model()
